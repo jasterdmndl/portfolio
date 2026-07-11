@@ -1,4 +1,4 @@
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import './planet-interaction.css'
 import { Float, Line, Stars, OrbitControls, ContactShadows, Html } from '@react-three/drei'
 import { useRef, useState, useMemo, useEffect, useCallback } from 'react'
@@ -49,7 +49,7 @@ function Satellite({ id, radius, speed, phase, color, selected }: { id: string, 
   </group>
 }
 
-function World({ selected, onSelect }: { selected: string | null, onSelect: (id: string | null) => void }) {
+function World({ selected, onSelect, onEnter }: { selected: string | null, onSelect: (id: string | null) => void, onEnter: () => void }) {
   const world = useRef<THREE.Group>(null)
   const coreRef = useRef<THREE.Mesh>(null)
   const basePos = useRef<Float32Array | null>(null)
@@ -245,6 +245,7 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
       const obj = e.object
       const id = (obj && (obj.name || obj.uuid)) ?? null
       onSelect(id)
+      onEnter()
     }
   }
   return <group ref={world} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
@@ -294,16 +295,40 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
   </group>
 }
 
-export default function DeveloperPlanet() {
+interface DeveloperPlanetProps {
+  entered: boolean
+  onEnter: () => void
+}
+
+function Scene({ entered, onEnter }: DeveloperPlanetProps) {
+  const { camera } = useThree()
   const [selected, setSelected] = useState<string | null>(null)
+  const target = useRef(new THREE.Vector3(0, .15, 4.1))
+
+  useFrame(() => {
+    const desiredY = entered ? 0.34 : 0.15
+    const desiredZ = entered ? 3.05 : 4.1
+    target.current.set(0, desiredY, desiredZ)
+    camera.position.lerp(target.current, 0.04)
+    camera.lookAt(0, 0.06, 0)
+  })
+
+  return (
+    <>
+      <ambientLight intensity={.45} />
+      <hemisphereLight args={['#2b2b2f', '#001014', 0.35]} />
+      <directionalLight position={[-3, 4, 3]} intensity={1.25} color={'#ffd8b3'} />
+      <pointLight position={[2, -1, 2]} intensity={.8} color={blue} />
+      <Stars radius={8} depth={3} count={230} factor={1.2} saturation={0} fade speed={.15} />
+      <World selected={selected} onSelect={setSelected} onEnter={onEnter} />
+      <ContactShadows position={[0, -1.5, 0]} opacity={0.5} blur={1.5} far={3} />
+      <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.12} rotateSpeed={0.6} />
+    </>
+  )
+}
+
+export default function DeveloperPlanet({ entered, onEnter }: DeveloperPlanetProps) {
   return <Canvas dpr={[1, 1.75]} camera={{ position: [0, .15, 4.1], fov: 39 }} gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
-    <ambientLight intensity={.45} />
-    <hemisphereLight args={['#2b2b2f', '#001014', 0.35]} />
-    <directionalLight position={[-3, 4, 3]} intensity={1.25} color={'#ffd8b3'} />
-    <pointLight position={[2, -1, 2]} intensity={.8} color={blue} />
-    <Stars radius={8} depth={3} count={230} factor={1.2} saturation={0} fade speed={.15} />
-    <World selected={selected} onSelect={(id) => setSelected(id)} />
-    <ContactShadows position={[0, -1.5, 0]} opacity={0.5} blur={1.5} far={3} />
-    <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.12} rotateSpeed={0.6} />
+    <Scene entered={entered} onEnter={onEnter} />
   </Canvas>
 }
