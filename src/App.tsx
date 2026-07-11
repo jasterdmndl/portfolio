@@ -8,6 +8,16 @@ const Download = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<string | null>(null)
+
+  function handleProjectSelect(id: string) {
+    setSelectedProject(id)
+    const target = document.getElementById(id)
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
   return (
     <main>
       <div className="noise" aria-hidden="true" />
@@ -38,7 +48,7 @@ function App() {
         </div>
           <motion.div className="planet-stage" initial={{ opacity: 0, scale: .92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .9, delay: .12, ease: 'easeOut' }}>
           <div className="planet-label label-top"><span>01</span> DEVELOPER WORLD</div>
-          <Suspense fallback={<div className="planet-loader" aria-label="Loading 3D developer world" />}><DeveloperPlanet /></Suspense>
+          <Suspense fallback={<div className="planet-loader" aria-label="Loading 3D developer world" />}><DeveloperPlanet selected={selectedProject} onProjectSelect={handleProjectSelect} /></Suspense>
           <div className="planet-label label-bottom"><span className="pulse" /> BUILDING IN PUBLIC</div>
           <p className="drag-hint">Give it a nudge — drag to explore <span>↗</span></p>
         </motion.div>
@@ -49,10 +59,16 @@ function App() {
         <div className="section-heading"><div><p className="section-kicker">Selected work <span>·</span> 2024—2026</p><h2>Thoughtful systems,<br /><em>built to last.</em></h2></div><p>Every project begins with the same question: how can technology make the next step feel effortless?</p></div>
         <div className="project-grid">
           {[
-            ['01', 'Web applications', 'Reliable product experiences shaped around people, not complexity.'],
-            ['02', 'Scalable systems', 'Deliberate foundations that stay clear as a product and its team grow.'],
-            ['03', 'Developer tools', 'Small, focused tools that turn friction into flow for technical teams.'],
-          ].map(([number, title, description]) => <article className="project-card" key={number}><div className="card-top"><span>{number}</span><ArrowUpRight /></div><div><h3>{title}</h3><p>{description}</p></div><div className="card-orbit" aria-hidden="true"><i /><b /></div></article>)}
+            ['project-01', '01', 'Web applications', 'Reliable product experiences shaped around people, not complexity.'],
+            ['project-02', '02', 'Scalable systems', 'Deliberate foundations that stay clear as a product and its team grow.'],
+            ['project-03', '03', 'Developer tools', 'Small, focused tools that turn friction into flow for technical teams.'],
+          ].map(([id, number, title, description]) => (
+            <article id={id} className={`project-card ${selectedProject === id ? 'active' : ''}`} key={id}>
+              <div className="card-top"><span>{number}</span><ArrowUpRight /></div>
+              <div><h3>{title}</h3><p>{description}</p></div>
+              <div className="card-orbit" aria-hidden="true"><i /><b /></div>
+            </article>
+          ))}
         </div>
       </section>
       <section className="about-section shell" id="about">

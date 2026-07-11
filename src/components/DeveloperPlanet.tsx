@@ -10,6 +10,11 @@ import viteLogo from '/tech-logos/vite.svg?raw'
 import tailwindLogo from '/tech-logos/tailwind.svg?raw'
 import threeLogo from '/tech-logos/three-js.svg?raw'
 
+type DeveloperPlanetProps = {
+  selected?: string | null
+  onProjectSelect?: (id: string) => void
+}
+
 // warmer, less 'AI-generic' accents
 const cyan = '#ffd08a'
 const blue = '#ff9b85'
@@ -23,6 +28,57 @@ function Tower({ position, height = .26 }: { position: [number, number, number],
     <mesh position={[0, height / 2, 0]}><cylinderGeometry args={[.055, .075, height, 6]} /><meshStandardMaterial color="#25445c" flatShading /></mesh>
     <mesh position={[0, height + .025, 0]}><sphereGeometry args={[.045, 6, 6]} /><meshBasicMaterial color={cyan} /></mesh>
     <pointLight color={cyan} intensity={.65} distance={.55} position={[0, height + .04, 0]} />
+  </group>
+}
+
+function ProjectSpire({ color, selected }: { color: string, selected?: boolean }) {
+  return <group>
+    <mesh position={[0, 0.1, 0]}>
+      <cylinderGeometry args={[0.05, 0.08, 0.18, 12]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.8 : 0.35} roughness={0.25} metalness={0.2} />
+    </mesh>
+    <mesh position={[0, 0.24, 0]}>
+      <coneGeometry args={[0.04, 0.1, 10]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.5 : 0.6} roughness={0.22} metalness={0.16} />
+    </mesh>
+    <mesh position={[0, 0.02, 0]}>
+      <torusGeometry args={[0.095, 0.008, 10, 64]} />
+      <meshBasicMaterial color={color} transparent opacity={selected ? 0.26 : 0.14} />
+    </mesh>
+  </group>
+}
+
+function ProjectPavilion({ color, selected }: { color: string, selected?: boolean }) {
+  return <group>
+    <mesh position={[0, 0.075, 0]}>
+      <boxGeometry args={[0.14, 0.12, 0.14]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.7 : 0.3} roughness={0.2} metalness={0.2} />
+    </mesh>
+    <mesh position={[0, 0.17, 0]}>
+      <coneGeometry args={[0.12, 0.1, 8]} />
+      <meshStandardMaterial color="#0d1317" roughness={0.7} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.03, 0]}>
+      <boxGeometry args={[0.12, 0.02, 0.12]} />
+      <meshBasicMaterial color={color} transparent opacity={0.18} />
+    </mesh>
+  </group>
+}
+
+function ProjectGateway({ color, selected }: { color: string, selected?: boolean }) {
+  return <group>
+    <mesh position={[0, 0.12, 0]}>
+      <boxGeometry args={[0.16, 0.16, 0.08]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.75 : 0.3} roughness={0.24} metalness={0.2} />
+    </mesh>
+    <mesh position={[0, 0.02, 0]}>
+      <torusGeometry args={[0.12, 0.025, 10, 64]} />
+      <meshStandardMaterial color="#0f171d" roughness={0.72} metalness={0.04} />
+    </mesh>
+    <mesh position={[0, 0.22, 0]}>
+      <cylinderGeometry args={[0.055, 0.055, 0.08, 8]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.05 : 0.45} roughness={0.28} metalness={0.18} />
+    </mesh>
   </group>
 }
 
@@ -247,6 +303,17 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
       onSelect(id)
     }
   }
+  const projectNodes = useMemo(() => [
+    { id: 'project-01', title: 'Web applications', basePos: [1.18, 0.14, -0.15] as [number, number, number], color: '#d7ff64', type: 'spire' },
+    { id: 'project-02', title: 'Scalable systems', basePos: [-1.32, 0.16, 0.05] as [number, number, number], color: '#6c8cff', type: 'gateway' },
+    { id: 'project-03', title: 'Developer tools', basePos: [0.04, -0.14, 1.24] as [number, number, number], color: '#4dd5cb', type: 'pavilion' },
+  ], [])
+
+  const handleProjectClick = (e: any, id: string) => {
+    e.stopPropagation()
+    onSelect(id)
+  }
+
   return <group ref={world} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
     <Float floatIntensity={0.08} rotationIntensity={0.25}>
       <mesh ref={coreRef} name="core" scale={selected === 'core' ? 1.06 : 1} rotation={[.12, .15, 0]}>
@@ -279,6 +346,34 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
     <Satellite id="sat-0" radius={1.73} speed={.42} phase={0} color={cyan} selected={selected} />
     <Satellite id="sat-1" radius={1.92} speed={.30} phase={2.15} color="#6c8cff" selected={selected} />
     <Satellite id="sat-2" radius={1.57} speed={.57} phase={4.1} color="#4dd5cb" selected={selected} />
+    {/* project history monuments anchored on the world */}
+    {projectNodes.map((node) => {
+      const isActive = selected === node.id
+      return (
+        <Float key={node.id} floatIntensity={0.18} rotationIntensity={0.05}>
+          <group position={node.basePos}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.046, 0]}>
+              <ringGeometry args={[0.095, 0.125, 40]} />
+              <meshBasicMaterial color={node.color} transparent opacity={isActive ? 0.22 : 0.1} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.048, 0]}>
+              <torusGeometry args={[0.112, 0.013, 12, 80]} />
+              <meshBasicMaterial color={node.color} transparent opacity={isActive ? 0.28 : 0.14} />
+            </mesh>
+            <group name={node.id} onClick={(e) => handleProjectClick(e, node.id)} scale={isActive ? 1.12 : 1}>
+              {node.type === 'spire' ? <ProjectSpire color={node.color} selected={isActive} /> : null}
+              {node.type === 'gateway' ? <ProjectGateway color={node.color} selected={isActive} /> : null}
+              {node.type === 'pavilion' ? <ProjectPavilion color={node.color} selected={isActive} /> : null}
+            </group>
+            <mesh position={[0, 0.16, 0]}>
+              <cylinderGeometry args={[0.045, 0.055, 0.02, 16]} />
+              <meshStandardMaterial color={node.color} emissive={node.color} emissiveIntensity={isActive ? 0.7 : 0.25} roughness={0.5} metalness={0.1} />
+            </mesh>
+            {isActive && <pointLight color={node.color} intensity={1.4} distance={0.85} position={[0, 0.3, 0]} />}
+          </group>
+        </Float>
+      )
+    })}
     {/* render tech nodes (spawned in this World scope) */}
     {techNodes.map((t) => (
       <group key={t.id} ref={el => (techRefs.current[t.id] = el)} position={t.basePos}>
@@ -294,15 +389,24 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
   </group>
 }
 
-export default function DeveloperPlanet() {
-  const [selected, setSelected] = useState<string | null>(null)
+export default function DeveloperPlanet({ selected, onProjectSelect }: DeveloperPlanetProps) {
+  const [localSelected, setLocalSelected] = useState<string | null>(null)
+  const activeSelection = selected ?? localSelected
+
+  const handleWorldSelect = (id: string | null) => {
+    setLocalSelected(id)
+    if (id?.startsWith('project-')) {
+      onProjectSelect?.(id)
+    }
+  }
+
   return <Canvas dpr={[1, 1.75]} camera={{ position: [0, .15, 4.1], fov: 39 }} gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
     <ambientLight intensity={.45} />
     <hemisphereLight args={['#2b2b2f', '#001014', 0.35]} />
     <directionalLight position={[-3, 4, 3]} intensity={1.25} color={'#ffd8b3'} />
     <pointLight position={[2, -1, 2]} intensity={.8} color={blue} />
     <Stars radius={8} depth={3} count={230} factor={1.2} saturation={0} fade speed={.15} />
-    <World selected={selected} onSelect={(id) => setSelected(id)} />
+    <World selected={activeSelection} onSelect={handleWorldSelect} />
     <ContactShadows position={[0, -1.5, 0]} opacity={0.5} blur={1.5} far={3} />
     <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.12} rotateSpeed={0.6} />
   </Canvas>
