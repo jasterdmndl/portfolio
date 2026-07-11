@@ -18,6 +18,20 @@ type DeveloperPlanetProps = {
 // warmer, less 'AI-generic' accents
 const cyan = '#ffd08a'
 const blue = '#ff9b85'
+const planetSurfaceRadius = 1.29
+
+function surfacePosition(theta: number, phi: number, radius = planetSurfaceRadius) {
+  return [
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta),
+  ] as [number, number, number]
+}
+
+function alignToSurfaceNormal(position: [number, number, number]) {
+  const normal = new THREE.Vector3(...position).normalize()
+  return new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
+}
 
 function Mountain({ position, rotation = 0, scale = 1 }: { position: [number, number, number], rotation?: number, scale?: number }) {
   return <mesh position={position} rotation={[0, rotation, 0]} scale={scale}><coneGeometry args={[.18, .48, 5]} /><meshStandardMaterial color="#19314a" flatShading roughness={.88} /></mesh>
@@ -31,53 +45,101 @@ function Tower({ position, height = .26 }: { position: [number, number, number],
   </group>
 }
 
-function ProjectSpire({ color, selected }: { color: string, selected?: boolean }) {
+function ProjectSpire({ color, selected, hovered }: { color: string, selected?: boolean, hovered?: boolean }) {
   return <group>
-    <mesh position={[0, 0.1, 0]}>
-      <cylinderGeometry args={[0.05, 0.08, 0.18, 12]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.8 : 0.35} roughness={0.25} metalness={0.2} />
+    <mesh position={[0, 0.01, 0]}>
+      <cylinderGeometry args={[0.09, 0.1, 0.02, 24]} />
+      <meshStandardMaterial color="#0b1012" roughness={0.72} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.035, 0]}>
+      <cylinderGeometry args={[0.08, 0.085, 0.03, 18]} />
+      <meshStandardMaterial color="#10181d" roughness={0.68} metalness={0.06} />
+    </mesh>
+    <mesh position={[0, 0.13, 0]}>
+      <cylinderGeometry args={[0.045, 0.07, 0.14, 12]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.92 : hovered ? 0.55 : 0.28} roughness={0.24} metalness={0.22} />
+    </mesh>
+    <mesh position={[0, 0.235, 0]}>
+      <coneGeometry args={[0.035, 0.12, 10]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.55 : hovered ? 0.85 : 0.55} roughness={0.18} metalness={0.18} />
+    </mesh>
+    <mesh position={[0, 0.065, 0]} rotation={[0, 0, 0]}>
+      <torusGeometry args={[0.095, 0.007, 12, 64]} />
+      <meshBasicMaterial color={color} transparent opacity={selected ? 0.28 : 0.14} />
+    </mesh>
+    <mesh position={[0, 0.22, 0.035]} rotation={[0, Math.PI / 8, 0]}>
+      <boxGeometry args={[0.02, 0.08, 0.01]} />
+      <meshStandardMaterial color="#0a1113" roughness={0.6} metalness={0.03} />
+    </mesh>
+    <mesh position={[0, 0.22, -0.035]} rotation={[0, -Math.PI / 8, 0]}>
+      <boxGeometry args={[0.02, 0.08, 0.01]} />
+      <meshStandardMaterial color="#0a1113" roughness={0.6} metalness={0.03} />
+    </mesh>
+  </group>
+}
+
+function ProjectPavilion({ color, selected, hovered }: { color: string, selected?: boolean, hovered?: boolean }) {
+  return <group>
+    <mesh position={[0, 0.01, 0]}>
+      <cylinderGeometry args={[0.1, 0.12, 0.02, 24]} />
+      <meshStandardMaterial color="#0b1012" roughness={0.72} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.04, 0]}>
+      <boxGeometry args={[0.18, 0.05, 0.18]} />
+      <meshStandardMaterial color="#10161b" roughness={0.7} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.08, 0]}>
+      <boxGeometry args={[0.16, 0.08, 0.16]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.8 : hovered ? 0.45 : 0.26} roughness={0.22} metalness={0.2} />
+    </mesh>
+    <mesh position={[0, 0.15, 0]}>
+      <boxGeometry args={[0.14, 0.1, 0.14]} />
+      <meshStandardMaterial color="#10161b" roughness={0.72} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.23, 0]}>
+      <coneGeometry args={[0.1, 0.08, 8]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.1 : hovered ? 0.65 : 0.4} roughness={0.2} metalness={0.12} />
+    </mesh>
+    <mesh position={[0.045, 0.19, 0.06]} rotation={[0, 0.4, 0]}>
+      <boxGeometry args={[0.06, 0.02, 0.04]} />
+      <meshStandardMaterial color="#0f171b" roughness={0.7} metalness={0.04} />
+    </mesh>
+    <mesh position={[-0.045, 0.19, 0.06]} rotation={[0, -0.4, 0]}>
+      <boxGeometry args={[0.06, 0.02, 0.04]} />
+      <meshStandardMaterial color="#0f171b" roughness={0.7} metalness={0.04} />
+    </mesh>
+  </group>
+}
+
+function ProjectGateway({ color, selected, hovered }: { color: string, selected?: boolean, hovered?: boolean }) {
+  return <group>
+    <mesh position={[0, 0.01, 0]}>
+      <cylinderGeometry args={[0.12, 0.14, 0.02, 24]} />
+      <meshStandardMaterial color="#0b1012" roughness={0.72} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.05, 0]}>
+      <boxGeometry args={[0.2, 0.06, 0.08]} />
+      <meshStandardMaterial color="#10161b" roughness={0.7} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, 0.12, 0]}>
+      <boxGeometry args={[0.16, 0.12, 0.08]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.9 : hovered ? 0.48 : 0.28} roughness={0.24} metalness={0.2} />
     </mesh>
     <mesh position={[0, 0.24, 0]}>
-      <coneGeometry args={[0.04, 0.1, 10]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.5 : 0.6} roughness={0.22} metalness={0.16} />
+      <cylinderGeometry args={[0.055, 0.055, 0.08, 8]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.15 : hovered ? 0.65 : 0.4} roughness={0.28} metalness={0.18} />
     </mesh>
-    <mesh position={[0, 0.02, 0]}>
-      <torusGeometry args={[0.095, 0.008, 10, 64]} />
-      <meshBasicMaterial color={color} transparent opacity={selected ? 0.26 : 0.14} />
-    </mesh>
-  </group>
-}
-
-function ProjectPavilion({ color, selected }: { color: string, selected?: boolean }) {
-  return <group>
-    <mesh position={[0, 0.075, 0]}>
-      <boxGeometry args={[0.14, 0.12, 0.14]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.7 : 0.3} roughness={0.2} metalness={0.2} />
-    </mesh>
-    <mesh position={[0, 0.17, 0]}>
-      <coneGeometry args={[0.12, 0.1, 8]} />
-      <meshStandardMaterial color="#0d1317" roughness={0.7} metalness={0.05} />
-    </mesh>
-    <mesh position={[0, 0.03, 0]}>
-      <boxGeometry args={[0.12, 0.02, 0.12]} />
-      <meshBasicMaterial color={color} transparent opacity={0.18} />
-    </mesh>
-  </group>
-}
-
-function ProjectGateway({ color, selected }: { color: string, selected?: boolean }) {
-  return <group>
-    <mesh position={[0, 0.12, 0]}>
-      <boxGeometry args={[0.16, 0.16, 0.08]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.75 : 0.3} roughness={0.24} metalness={0.2} />
-    </mesh>
-    <mesh position={[0, 0.02, 0]}>
-      <torusGeometry args={[0.12, 0.025, 10, 64]} />
+    <mesh position={[0, 0.055, 0]}>
+      <torusGeometry args={[0.12, 0.02, 10, 64]} />
       <meshStandardMaterial color="#0f171d" roughness={0.72} metalness={0.04} />
     </mesh>
-    <mesh position={[0, 0.22, 0]}>
-      <cylinderGeometry args={[0.055, 0.055, 0.08, 8]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 1.05 : 0.45} roughness={0.28} metalness={0.18} />
+    <mesh position={[0.06, 0.14, 0.04]}>
+      <boxGeometry args={[0.04, 0.08, 0.02]} />
+      <meshStandardMaterial color="#0f171d" roughness={0.7} metalness={0.05} />
+    </mesh>
+    <mesh position={[-0.06, 0.14, 0.04]}>
+      <boxGeometry args={[0.04, 0.08, 0.02]} />
+      <meshStandardMaterial color="#0f171d" roughness={0.7} metalness={0.05} />
     </mesh>
   </group>
 }
@@ -304,14 +366,21 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
     }
   }
   const projectNodes = useMemo(() => [
-    { id: 'project-01', title: 'Web applications', basePos: [1.18, 0.14, -0.15] as [number, number, number], color: '#d7ff64', type: 'spire' },
-    { id: 'project-02', title: 'Scalable systems', basePos: [-1.32, 0.16, 0.05] as [number, number, number], color: '#6c8cff', type: 'gateway' },
-    { id: 'project-03', title: 'Developer tools', basePos: [0.04, -0.14, 1.24] as [number, number, number], color: '#4dd5cb', type: 'pavilion' },
+    { id: 'project-01', title: 'Web applications', basePos: surfacePosition(-0.18, 1.45), quaternion: alignToSurfaceNormal(surfacePosition(-0.18, 1.45)), color: '#d7ff64', type: 'spire' },
+    { id: 'project-02', title: 'Scalable systems', basePos: surfacePosition(3.05, 1.35), quaternion: alignToSurfaceNormal(surfacePosition(3.05, 1.35)), color: '#6c8cff', type: 'gateway' },
+    { id: 'project-03', title: 'Developer tools', basePos: surfacePosition(1.58, 1.2), quaternion: alignToSurfaceNormal(surfacePosition(1.58, 1.2)), color: '#4dd5cb', type: 'pavilion' },
   ], [])
 
+  const [hoveredProject, setHoveredProject] = useState<string | null>(null)
   const handleProjectClick = (e: any, id: string) => {
     e.stopPropagation()
     onSelect(id)
+  }
+  const handleProjectHover = (id: string | null) => {
+    setHoveredProject(id)
+    if (typeof document !== 'undefined') {
+      document.body.style.cursor = id ? 'pointer' : 'grab'
+    }
   }
 
   return <group ref={world} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
@@ -349,25 +418,36 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
     {/* project history monuments anchored on the world */}
     {projectNodes.map((node) => {
       const isActive = selected === node.id
+      const isHover = hoveredProject === node.id
       return (
         <Float key={node.id} floatIntensity={0.18} rotationIntensity={0.05}>
-          <group position={node.basePos}>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.046, 0]}>
+          <group position={node.basePos} quaternion={node.quaternion}>
+            <mesh position={[0, 0.01, 0]}>
               <ringGeometry args={[0.095, 0.125, 40]} />
-              <meshBasicMaterial color={node.color} transparent opacity={isActive ? 0.22 : 0.1} />
+              <meshBasicMaterial color={node.color} transparent opacity={isActive || isHover ? 0.24 : 0.1} />
             </mesh>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.048, 0]}>
+            <mesh position={[0, 0.008, 0]}>
               <torusGeometry args={[0.112, 0.013, 12, 80]} />
-              <meshBasicMaterial color={node.color} transparent opacity={isActive ? 0.28 : 0.14} />
+              <meshBasicMaterial color={node.color} transparent opacity={isActive || isHover ? 0.3 : 0.14} />
             </mesh>
-            <group name={node.id} onClick={(e) => handleProjectClick(e, node.id)} scale={isActive ? 1.12 : 1}>
-              {node.type === 'spire' ? <ProjectSpire color={node.color} selected={isActive} /> : null}
-              {node.type === 'gateway' ? <ProjectGateway color={node.color} selected={isActive} /> : null}
-              {node.type === 'pavilion' ? <ProjectPavilion color={node.color} selected={isActive} /> : null}
+            <group
+              name={node.id}
+              onClick={(e) => handleProjectClick(e, node.id)}
+              onPointerOver={(e) => { e.stopPropagation(); handleProjectHover(node.id) }}
+              onPointerOut={(e) => { e.stopPropagation(); handleProjectHover(null) }}
+              scale={isActive ? 1.14 : 1}
+            >
+              {node.type === 'spire' ? <ProjectSpire color={node.color} selected={isActive} hovered={isHover} /> : null}
+              {node.type === 'gateway' ? <ProjectGateway color={node.color} selected={isActive} hovered={isHover} /> : null}
+              {node.type === 'pavilion' ? <ProjectPavilion color={node.color} selected={isActive} hovered={isHover} /> : null}
             </group>
             <mesh position={[0, 0.16, 0]}>
               <cylinderGeometry args={[0.045, 0.055, 0.02, 16]} />
-              <meshStandardMaterial color={node.color} emissive={node.color} emissiveIntensity={isActive ? 0.7 : 0.25} roughness={0.5} metalness={0.1} />
+              <meshStandardMaterial color={node.color} emissive={node.color} emissiveIntensity={isActive || isHover ? 0.8 : 0.25} roughness={0.5} metalness={0.1} />
+            </mesh>
+            <mesh position={[0, 0.24, 0]}>
+              <sphereGeometry args={[0.015, 12, 12]} />
+              <meshStandardMaterial color={node.color} emissive={node.color} emissiveIntensity={isActive || isHover ? 1.3 : 0.45} roughness={0.2} metalness={0.15} />
             </mesh>
             {isActive && <pointLight color={node.color} intensity={1.4} distance={0.85} position={[0, 0.3, 0]} />}
           </group>
