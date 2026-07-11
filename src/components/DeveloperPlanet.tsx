@@ -18,7 +18,7 @@ type DeveloperPlanetProps = {
 // warmer, less 'AI-generic' accents
 const cyan = '#ffd08a'
 const blue = '#ff9b85'
-const planetSurfaceRadius = 1.29
+const planetSurfaceRadius = 1.15
 
 function surfacePosition(theta: number, phi: number, radius = planetSurfaceRadius) {
   return [
@@ -384,20 +384,55 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
   }
 
   return <group ref={world} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
+    <ambientLight intensity={0.42} />
+    <directionalLight intensity={1.1} position={[2.4, 1.8, 3.2]} />
+    <hemisphereLight intensity={0.75} groundColor="#0d1620" color="#8ecbff" />
     <Float floatIntensity={0.08} rotationIntensity={0.25}>
       <mesh ref={coreRef} name="core" scale={selected === 'core' ? 1.06 : 1} rotation={[.12, .15, 0]}>
-        <icosahedronGeometry args={[1.26, 2]} />
-        <meshStandardMaterial color="#0e1416" flatShading roughness={.86} metalness={.08} />
+        <icosahedronGeometry args={[1.12, 4]} />
+        <meshStandardMaterial color="#1b5d8b" roughness={0.96} metalness={0.02} />
       </mesh>
       <mesh name="core-wire" scale={1.01} rotation={[.12, .15, 0]}>
-        <icosahedronGeometry args={[1.26, 1]} />
-        <meshBasicMaterial color={blue} wireframe transparent opacity={.12} />
+        <icosahedronGeometry args={[1.12, 3]} />
+        <meshBasicMaterial color="#bfefff" wireframe transparent opacity={0.12} />
+      </mesh>
+      <mesh position={[-0.46, 0.18, -0.42]} rotation={[0.18, 0.86, 0.08]} scale={[0.52, 0.18, 0.36]}>
+        <dodecahedronGeometry args={[0.95, 0]} />
+        <meshStandardMaterial color="#3f8f4f" roughness={0.95} metalness={0.01} />
+      </mesh>
+      <mesh position={[0.32, -0.08, 0.48]} rotation={[0.42, -0.3, 0.16]} scale={[0.34, 0.14, 0.28]}>
+        <octahedronGeometry args={[0.9, 0]} />
+        <meshStandardMaterial color="#53a15d" roughness={0.95} metalness={0.01} />
+      </mesh>
+      <mesh position={[0.18, 0.28, -0.5]} rotation={[0.2, 0.24, -0.28]} scale={[0.28, 0.16, 0.24]}>
+        <icosahedronGeometry args={[0.84, 0]} />
+        <meshStandardMaterial color="#4fa55d" roughness={0.95} metalness={0.01} />
+      </mesh>
+      <mesh position={[-0.12, -0.21, 0.54]} rotation={[-0.18, 0.5, 0.28]} scale={[0.2, 0.1, 0.26]}>
+        <tetrahedronGeometry args={[0.86]} />
+        <meshStandardMaterial color="#4b9d55" roughness={0.95} metalness={0.01} />
+      </mesh>
+      <mesh position={[0.58, 0.12, -0.16]} rotation={[0.05, -0.35, -0.12]} scale={[0.28, 0.12, 0.22]}>
+        <octahedronGeometry args={[0.82, 0]} />
+        <meshStandardMaterial color="#4e9b57" roughness={0.95} metalness={0.01} />
+      </mesh>
+      <mesh position={[-0.62, -0.06, 0.08]} rotation={[0.16, 0.8, 0.12]} scale={[0.24, 0.1, 0.2]}>
+        <icosahedronGeometry args={[0.78, 0]} />
+        <meshStandardMaterial color="#5fb86b" roughness={0.95} metalness={0.01} />
+      </mesh>
+      <mesh position={[0.02, 0.36, 0.42]} rotation={[0.2, -0.2, 0.14]} scale={[0.22, 0.09, 0.18]}>
+        <dodecahedronGeometry args={[0.72, 0]} />
+        <meshStandardMaterial color="#62b66e" roughness={0.95} metalness={0.01} />
       </mesh>
     </Float>
     {/* subtle atmosphere */}
-    <mesh scale={1.12} position={[0, 0.02, 0]} renderOrder={10}>
-      <icosahedronGeometry args={[1.28, 2]} />
-      <meshBasicMaterial color={cyan} transparent opacity={0.06} blending={THREE.AdditiveBlending} />
+    <mesh scale={1.08} position={[0, 0.02, 0]} renderOrder={10}>
+      <sphereGeometry args={[1.18, 48, 48]} />
+      <meshBasicMaterial color="#dcefff" transparent opacity={0.16} blending={THREE.AdditiveBlending} />
+    </mesh>
+    <mesh scale={1.04} position={[0, 0.02, 0]} renderOrder={9}>
+      <sphereGeometry args={[1.18, 48, 48]} />
+      <meshStandardMaterial color="#f7fbff" transparent opacity={0.12} roughness={0.99} metalness={0.0} />
     </mesh>
     {/* ambient particles / dust */}
     <points ref={particlesRef} rotation={[0.2, 0.6, 0]}>
@@ -437,6 +472,11 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
               onPointerOut={(e) => { e.stopPropagation(); handleProjectHover(null) }}
               scale={isActive ? 1.14 : 1}
             >
+              {/* Invisible larger collider to make clicking easier */}
+              <mesh name={node.id} position={[0, 0.14, 0]}>
+                <cylinderGeometry args={[0.28, 0.28, 0.36, 8]} />
+                <meshBasicMaterial color={node.color} transparent opacity={0.06} depthWrite={false} side={THREE.DoubleSide} />
+              </mesh>
               {node.type === 'spire' ? <ProjectSpire color={node.color} selected={isActive} hovered={isHover} /> : null}
               {node.type === 'gateway' ? <ProjectGateway color={node.color} selected={isActive} hovered={isHover} /> : null}
               {node.type === 'pavilion' ? <ProjectPavilion color={node.color} selected={isActive} hovered={isHover} /> : null}
@@ -480,7 +520,7 @@ export default function DeveloperPlanet({ selected, onProjectSelect }: Developer
     }
   }
 
-  return <Canvas dpr={[1, 1.75]} camera={{ position: [0, .15, 4.1], fov: 39 }} gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
+  return <Canvas dpr={[1, 1.75]} camera={{ position: [0, 0.08, 6], fov: 30 }} gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
     <ambientLight intensity={.45} />
     <hemisphereLight args={['#2b2b2f', '#001014', 0.35]} />
     <directionalLight position={[-3, 4, 3]} intensity={1.25} color={'#ffd8b3'} />
