@@ -43,7 +43,7 @@ function App() {
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}><span /><span /></button>
         <div className={`nav-links ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)}>
           <a href="#work">Work</a><a href="#about">About</a><a href="#contact">Contact</a>
-          <a className="nav-cta" href="mailto:hello@jhesterdimaandal.dev">Start a conversation <ArrowUpRight /></a>
+          <a className="nav-cta" href="https://www.facebook.com/lemuel.dimaandal/">Start a conversation <ArrowUpRight /></a>
         </div>
       </nav>
 
@@ -96,7 +96,7 @@ function App() {
         </div>
         <div className="contact-content">
           <div><p className="section-kicker">Have a project in mind?</p><h2>Let&apos;s make it<br /><em>remarkable.</em></h2></div>
-          <a className="contact-cta" href="mailto:hello@jhesterdimaandal.dev" aria-label="Email Jhester Dimaandal">
+          <a className="contact-cta" href="https://www.facebook.com/lemuel.dimaandal/" aria-label="Email Jhester Dimaandal">
             <span>GET IN TOUCH</span>
             <ArrowUpRight />
           </a>
