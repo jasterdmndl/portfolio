@@ -1,5 +1,7 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { fetchUserRepos, GitHubRepo } from './utils/github'
+import { GitHubProjectCard } from './components/GitHubProjectCard'
 
 const DeveloperPlanet = lazy(() => import('./components/DeveloperPlanet'))
 
@@ -9,6 +11,19 @@ const Download = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
+  const [repos, setRepos] = useState<GitHubRepo[]>([])
+  const [reposLoading, setReposLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadRepos() {
+      setReposLoading(true)
+      const fetchedRepos = await fetchUserRepos()
+      // Take top 6 most recently updated repos
+      setRepos(fetchedRepos.slice(0, 6))
+      setReposLoading(false)
+    }
+    loadRepos()
+  }, [])
 
   function handleProjectSelect(id: string) {
     setSelectedProject(id)
@@ -48,27 +63,27 @@ function App() {
         </div>
           <motion.div className="planet-stage" initial={{ opacity: 0, scale: .92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .9, delay: .12, ease: 'easeOut' }}>
           <div className="planet-label label-top"><span>01</span> DEVELOPER WORLD</div>
-          <Suspense fallback={<div className="planet-loader" aria-label="Loading 3D developer world" />}><DeveloperPlanet selected={selectedProject} onProjectSelect={handleProjectSelect} /></Suspense>
-          <div className="planet-label label-bottom"><span className="pulse" /> BUILDING IN PUBLIC</div>
+          <Suspense fallback={<div className="planet-loader" aria-label="Loading 3D developer world" />}><DeveloperPlanet selected={selectedProject} onProjectSelect={handleProjectSelect} repos={repos} /></Suspense>
+          <div className="planet-label label-bottom"><span className="pulse" /> {repos.length > 0 ? 'LIVE FROM GITHUB' : 'LOADING PROJECTS'}</div>
           <p className="drag-hint">Give it a nudge — drag to explore <span>↗</span></p>
         </motion.div>
       </section>
       <div className="scroll-cue shell"><span className="scroll-line" /> Scroll to explore</div>
 
       <section className="work-section shell" id="work">
-        <div className="section-heading"><div><p className="section-kicker">Selected work <span>·</span> 2024—2026</p><h2>Thoughtful systems,<br /><em>built to last.</em></h2></div><p>Every project begins with the same question: how can technology make the next step feel effortless?</p></div>
-        <div className="project-grid">
-          {[
-            ['project-01', '01', 'Web applications', 'Reliable product experiences shaped around people, not complexity.'],
-            ['project-02', '02', 'Scalable systems', 'Deliberate foundations that stay clear as a product and its team grow.'],
-            ['project-03', '03', 'Developer tools', 'Small, focused tools that turn friction into flow for technical teams.'],
-          ].map(([id, number, title, description]) => (
-            <article id={id} className={`project-card ${selectedProject === id ? 'active' : ''}`} key={id}>
-              <div className="card-top"><span>{number}</span><ArrowUpRight /></div>
-              <div><h3>{title}</h3><p>{description}</p></div>
-              <div className="card-orbit" aria-hidden="true"><i /><b /></div>
-            </article>
-          ))}
+        <div className="section-heading"><div><p className="section-kicker">Featured projects <span>·</span> From GitHub</p><h2>Thoughtful systems,<br /><em>built to last.</em></h2></div><p>Every project begins with the same question: how can technology make the next step feel effortless?</p></div>
+        <div className="github-projects-grid">
+          {reposLoading ? (
+            <div className="loading-state" style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', opacity: 0.6 }}>Loading your projects...</div>
+          ) : repos.length === 0 ? (
+            <div className="empty-state" style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', opacity: 0.6 }}>No repositories found. Check your GitHub settings or username.</div>
+          ) : (
+            repos.map((repo, idx) => (
+              <div key={repo.id} id={`project-${String(idx + 1).padStart(2, '0')}`}>
+                <GitHubProjectCard repo={repo} isSelected={selectedProject === `project-${String(idx + 1).padStart(2, '0')}`} />
+              </div>
+            ))
+          )}
         </div>
       </section>
       <section className="about-section shell" id="about">

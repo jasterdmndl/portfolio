@@ -3,6 +3,8 @@ import './planet-interaction.css'
 import { Float, Line, Stars, OrbitControls, ContactShadows, Html } from '@react-three/drei'
 import { useRef, useState, useMemo, useEffect, useCallback } from 'react'
 import * as THREE from 'three'
+import type { GitHubRepo } from '../utils/github'
+import { mapRepoToProject } from '../utils/github'
 // Inline default logos (raw SVG) for reliable rendering
 import reactLogo from '/tech-logos/react.svg?raw'
 import typescriptLogo from '/tech-logos/typescript.svg?raw'
@@ -13,6 +15,7 @@ import threeLogo from '/tech-logos/three-js.svg?raw'
 type DeveloperPlanetProps = {
   selected?: string | null
   onProjectSelect?: (id: string) => void
+  repos?: GitHubRepo[]
 }
 
 // warmer, less 'AI-generic' accents
@@ -167,7 +170,7 @@ function Satellite({ id, radius, speed, phase, color, selected }: { id: string, 
   </group>
 }
 
-function World({ selected, onSelect }: { selected: string | null, onSelect: (id: string | null) => void }) {
+function World({ selected, onSelect, repos }: { selected: string | null, onSelect: (id: string | null) => void, repos?: GitHubRepo[] }) {
   const world = useRef<THREE.Group>(null)
   const coreRef = useRef<THREE.Mesh>(null)
   const basePos = useRef<Float32Array | null>(null)
@@ -365,11 +368,37 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
       onSelect(id)
     }
   }
-  const projectNodes = useMemo(() => [
-    { id: 'project-01', title: 'Web applications', basePos: surfacePosition(-0.18, 1.45), quaternion: alignToSurfaceNormal(surfacePosition(-0.18, 1.45)), color: '#d7ff64', type: 'spire' },
-    { id: 'project-02', title: 'Scalable systems', basePos: surfacePosition(3.05, 1.35), quaternion: alignToSurfaceNormal(surfacePosition(3.05, 1.35)), color: '#6c8cff', type: 'gateway' },
-    { id: 'project-03', title: 'Developer tools', basePos: surfacePosition(1.58, 1.2), quaternion: alignToSurfaceNormal(surfacePosition(1.58, 1.2)), color: '#4dd5cb', type: 'pavilion' },
-  ], [])
+  const projectNodes = useMemo(() => {
+    // Use GitHub repos if provided, otherwise fall back to static projects
+    if (repos && repos.length > 0) {
+      // Map first 3 repos to surface positions on the planet
+      return repos.slice(0, 3).map((repo, idx) => {
+        const surfaceTheta = (idx * Math.PI * 1.5) - 0.18
+        const surfacePhi = 1.2 + idx * 0.15
+        const basePos = surfacePosition(surfaceTheta, surfacePhi)
+        const colors = ['#d7ff64', '#6c8cff', '#4dd5cb']
+        const types = ['spire', 'gateway', 'pavilion']
+        
+        return {
+          id: `project-${String(idx + 1).padStart(2, '0')}`,
+          title: repo.name,
+          description: repo.description || 'No description',
+          basePos,
+          quaternion: alignToSurfaceNormal(basePos),
+          color: colors[idx % colors.length],
+          type: types[idx % types.length],
+          repo,
+        }
+      })
+    }
+    
+    // Fallback static projects
+    return [
+      { id: 'project-01', title: 'Web applications', description: 'Reliable product experiences', basePos: surfacePosition(-0.18, 1.45), quaternion: alignToSurfaceNormal(surfacePosition(-0.18, 1.45)), color: '#d7ff64', type: 'spire' },
+      { id: 'project-02', title: 'Scalable systems', description: 'Deliberate foundations', basePos: surfacePosition(3.05, 1.35), quaternion: alignToSurfaceNormal(surfacePosition(3.05, 1.35)), color: '#6c8cff', type: 'gateway' },
+      { id: 'project-03', title: 'Developer tools', description: 'Focused tools for teams', basePos: surfacePosition(1.58, 1.2), quaternion: alignToSurfaceNormal(surfacePosition(1.58, 1.2)), color: '#4dd5cb', type: 'pavilion' },
+    ]
+  }, [repos])
 
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
   const handleProjectClick = (e: any, id: string) => {
@@ -509,7 +538,7 @@ function World({ selected, onSelect }: { selected: string | null, onSelect: (id:
   </group>
 }
 
-export default function DeveloperPlanet({ selected, onProjectSelect }: DeveloperPlanetProps) {
+export default function DeveloperPlanet({ selected, onProjectSelect, repos }: DeveloperPlanetProps) {
   const [localSelected, setLocalSelected] = useState<string | null>(null)
   const activeSelection = selected ?? localSelected
 
@@ -526,7 +555,7 @@ export default function DeveloperPlanet({ selected, onProjectSelect }: Developer
     <directionalLight position={[-3, 4, 3]} intensity={1.25} color={'#ffd8b3'} />
     <pointLight position={[2, -1, 2]} intensity={.8} color={blue} />
     <Stars radius={8} depth={3} count={230} factor={1.2} saturation={0} fade speed={.15} />
-    <World selected={activeSelection} onSelect={handleWorldSelect} />
+    <World selected={activeSelection} onSelect={handleWorldSelect} repos={repos} />
     <ContactShadows position={[0, -1.5, 0]} opacity={0.5} blur={1.5} far={3} />
     <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.12} rotateSpeed={0.6} />
   </Canvas>
