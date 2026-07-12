@@ -18,8 +18,8 @@ function App() {
     async function loadRepos() {
       setReposLoading(true)
       const fetchedRepos = await fetchUserRepos()
-      // Take top 6 most recently updated repos
-      setRepos(fetchedRepos.slice(0, 6))
+      // Take top 4 most recently updated repos
+      setRepos(fetchedRepos.slice(0, 4))
       setReposLoading(false)
     }
     loadRepos()

@@ -371,13 +371,18 @@ function World({ selected, onSelect, repos }: { selected: string | null, onSelec
   const projectNodes = useMemo(() => {
     // Use GitHub repos if provided, otherwise fall back to static projects
     if (repos && repos.length > 0) {
-      // Map first 3 repos to surface positions on the planet
-      return repos.slice(0, 3).map((repo, idx) => {
-        const surfaceTheta = (idx * Math.PI * 1.5) - 0.18
-        const surfacePhi = 1.2 + idx * 0.15
-        const basePos = surfacePosition(surfaceTheta, surfacePhi)
-        const colors = ['#d7ff64', '#6c8cff', '#4dd5cb']
-        const types = ['spire', 'gateway', 'pavilion']
+      // Distribute all repos evenly around the planet using golden angle for natural distribution
+      const goldenAngle = Math.PI * (3 - Math.sqrt(5)) // ~2.39996 radians
+      const colors = ['#d7ff64', '#6c8cff', '#4dd5cb']
+      const types = ['spire', 'gateway', 'pavilion']
+      
+      return repos.map((repo, idx) => {
+        const n = repos.length
+        // Golden spiral distribution on sphere
+        const phi = Math.acos(1 - (2 * idx) / n) // latitude, evenly distributed
+        const theta = goldenAngle * idx // longitude, spiraling
+        
+        const basePos = surfacePosition(theta, phi)
         
         return {
           id: `project-${String(idx + 1).padStart(2, '0')}`,
