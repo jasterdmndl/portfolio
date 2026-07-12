@@ -91,7 +91,16 @@ function App() {
         <div className="about-content"><h2>Engineering with<br /><em>quiet intention.</em></h2><div><p>I care about the work behind the interface: well-considered systems, readable code, and a product experience that feels naturally useful.</p><p>I&apos;m always learning, refining, and building toward the next meaningful challenge.</p><a className="text-link" href="mailto:hello@jhesterdimaandal.dev">More about my approach <ArrowUpRight /></a></div></div>
       </section>
       <section className="contact-section shell" id="contact">
-        <div><p className="section-kicker">Have a project in mind?</p><h2>Let&apos;s make it<br /><em>remarkable.</em></h2></div><a className="contact-orb" href="mailto:hello@jhesterdimaandal.dev" aria-label="Email Jhester Dimaandal"><span>GET IN<br />TOUCH</span><ArrowUpRight /></a>
+        <div className="contact-character">
+          <img src="/images/pixel-character.png" alt="Pixel art character with phone" />
+        </div>
+        <div className="contact-content">
+          <div><p className="section-kicker">Have a project in mind?</p><h2>Let&apos;s make it<br /><em>remarkable.</em></h2></div>
+          <a className="contact-cta" href="mailto:hello@jhesterdimaandal.dev" aria-label="Email Jhester Dimaandal">
+            <span>GET IN TOUCH</span>
+            <ArrowUpRight />
+          </a>
+        </div>
       </section>
       <footer className="footer shell"><span>© {new Date().getFullYear()} Jhester Dimaandal</span><span>Designed &amp; built with intention</span></footer>
     </main>
