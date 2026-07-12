@@ -37,7 +37,7 @@ function App() {
     <main>
       <div className="noise" aria-hidden="true" />
       <div className="technical-grid" aria-hidden="true" />
-      <aside className="site-rail" aria-hidden="true"><span>JD / 001</span><i /><span>MANILA, PH</span></aside>
+      <aside className="site-rail" aria-hidden="true"><span>JD / 2026</span><i /><span>BATANGAS CITY, PH</span></aside>
       <nav className="nav shell" aria-label="Primary navigation">
         <a className="brand" href="#top" aria-label="Jhester Dimaandal home" onClick={() => setMenuOpen(false)}><span className="brand-mark">JD</span><span>JHESTER <span className="muted">DIMAANDAL</span></span></a>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}><span /><span /></button>
@@ -49,13 +49,13 @@ function App() {
 
       <section className="hero shell" id="top">
         <div className="hero-copy">
-          <motion.p className="eyebrow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .55 }}><span className="status-dot" /> System online · Available for opportunities</motion.p>
+          <motion.p className="eyebrow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .55 }}><span className="status-dot" /> CURRENTLY BUILDING · Available for opportunities</motion.p>
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .08 }}>
             <p className="hello">Hello, I&apos;m</p>
             <h1>Jhester<br /><em>Dimaandal<span className="title-mark"></span></em></h1>
           </motion.div>
           <motion.p className="headline" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .18 }}>Building software that grows<br />with every challenge.</motion.p>
-          <motion.p className="intro" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .25 }}>I build modern, scalable applications with a focus on clean architecture and thoughtful user experiences.</motion.p>
+          <motion.p className="intro" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .25 }}>I enjoy turning ideas into software that solves real problems. Every project is an opportunity to improve my craft, explore new technologies, and build something meaningful.</motion.p>
           <motion.div className="actions" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .32 }}>
             <a className="button primary" href="#work">View my work <ArrowUpRight /></a>
             <a className="button secondary" href="/resume.pdf" download>Download résumé <Download /></a>
@@ -88,7 +88,7 @@ function App() {
       </section>
       <section className="about-section shell" id="about">
         <p className="section-kicker">A little about me</p>
-        <div className="about-content"><h2>Engineering with<br /><em>quiet intention.</em></h2><div><p>I care about the work behind the interface: well-considered systems, readable code, and a product experience that feels naturally useful.</p><p>I&apos;m always learning, refining, and building toward the next meaningful challenge.</p><a className="text-link" href="mailto:hello@jhesterdimaandal.dev">More about my approach <ArrowUpRight /></a></div></div>
+        <div className="about-content"><h2>Every projects<br /><em>expands my universe.</em></h2><div><p>I enjoy transforming ideas into software that is simple, scalable, and built to last. Every project is an opportunity to learn, refine my craft, and create meaningful solutions.</p><p>I&apos;m always learning, refining, and building toward the next meaningful challenge.</p><a className="text-link" href="https://www.facebook.com/lemuel.dimaandal/">Learn More About Me <ArrowUpRight /></a></div></div>
       </section>
       <section className="contact-section shell" id="contact">
         <div className="contact-character">
