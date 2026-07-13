@@ -1,7 +1,7 @@
 import { Canvas, useFrame } from '@react-three/fiber'
 import './planet-interaction.css'
-import { Float, Line, Stars, OrbitControls, ContactShadows, Html } from '@react-three/drei'
-import { useRef, useState, useMemo, useEffect, useCallback } from 'react'
+import { Float, Line, Stars, OrbitControls, ContactShadows, Html, Billboard, useTexture } from '@react-three/drei'
+import { useRef, useState, useMemo, useEffect, useCallback, forwardRef } from 'react'
 import * as THREE from 'three'
 import type { GitHubRepo } from '../utils/github'
 import { mapRepoToProject } from '../utils/github'
@@ -46,6 +46,96 @@ function Tower({ position, height = .26 }: { position: [number, number, number],
     <mesh position={[0, height + .025, 0]}><sphereGeometry args={[.045, 6, 6]} /><meshBasicMaterial color={cyan} /></mesh>
     <pointLight color={cyan} intensity={.65} distance={.55} position={[0, height + .04, 0]} />
   </group>
+}
+
+function Spaceship({ radius = 2.0, speed = 0.3, phase = 1.0 }) {
+  const orbitRef = useRef<THREE.Group>(null)
+  const shipRef = useRef<THREE.Group>(null)
+  const texture = useTexture('/images/greeting-character.png')
+
+  useEffect(() => {
+    if (texture) {
+      texture.magFilter = THREE.NearestFilter
+      texture.minFilter = THREE.NearestFilter
+    }
+  }, [texture])
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime() * speed + phase
+    if (orbitRef.current) {
+      orbitRef.current.rotation.y = t
+    }
+    if (shipRef.current) {
+      shipRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 1.4) * 0.06
+      shipRef.current.rotation.z = Math.cos(clock.getElapsedTime() * 1.1) * 0.04
+    }
+  })
+
+  return (
+    <group ref={orbitRef} rotation={[0.28, 0.4, -0.1]}>
+      <group position={[radius, 0, 0]} ref={shipRef}>
+
+        {/* ---- Saucer hull ---- */}
+        {/* Wide bottom disc */}
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[0.28, 0.34, 0.07, 32]} />
+          <meshStandardMaterial color="#4a7a9b" metalness={0.7} roughness={0.3} />
+        </mesh>
+
+        {/* Mid ridge that tapers upward */}
+        <mesh position={[0, 0.045, 0]}>
+          <cylinderGeometry args={[0.20, 0.28, 0.07, 32]} />
+          <meshStandardMaterial color="#3a6275" metalness={0.65} roughness={0.35} />
+        </mesh>
+
+        {/* Upper cabin platform — widened to seat the larger dome */}
+        <mesh position={[0, 0.085, 0]}>
+          <cylinderGeometry args={[0.22, 0.22, 0.02, 24]} />
+          <meshStandardMaterial color="#4a7a9b" metalness={0.7} roughness={0.3} />
+        </mesh>
+
+        {/* ---- Character billboard — drawn BEFORE dome for correct transparency ---- */}
+        {/* Dome at y=0.095, radius=0.22: top=0.315, center=0.205                    */}
+        {/* Character 0.20×0.28: fits within dome (width at center: 2×sqrt(0.22²-0.11²)=0.38) */}
+        <Billboard>
+          <mesh position={[0, 0.205, 0]}>
+            <planeGeometry args={[0.20, 0.28]} />
+            <meshBasicMaterial map={texture} transparent alphaTest={0.4} side={THREE.DoubleSide} depthWrite={false} />
+          </mesh>
+        </Billboard>
+
+        {/* Glass dome — larger hemisphere so character fills it nicely */}
+        <mesh position={[0, 0.095, 0]}>
+          <sphereGeometry args={[0.22, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial
+            color="#a8d8f0"
+            transparent
+            opacity={0.20}
+            roughness={0.05}
+            metalness={0.1}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+          />
+        </mesh>
+
+        {/* Dome base ring at dome equator */}
+        <mesh position={[0, 0.095, 0]}>
+          <torusGeometry args={[0.22, 0.009, 8, 40]} />
+          <meshStandardMaterial color="#5a8fa8" metalness={0.85} roughness={0.15} />
+        </mesh>
+
+        {/* Antenna */}
+        <mesh position={[0, 0.32, 0]}>
+          <cylinderGeometry args={[0.003, 0.006, 0.12, 6]} />
+          <meshStandardMaterial color="#c8a060" metalness={0.8} roughness={0.25} />
+        </mesh>
+        <mesh position={[0, 0.385, 0]}>
+          <sphereGeometry args={[0.011, 8, 8]} />
+          <meshStandardMaterial color="#c8a060" metalness={0.8} roughness={0.25} />
+        </mesh>
+      </group>
+    </group>
+  )
 }
 
 function ProjectSpire({ color, selected, hovered }: { color: string, selected?: boolean, hovered?: boolean }) {
@@ -305,6 +395,7 @@ function World({ selected, onSelect, repos }: { selected: string | null, onSelec
       world.current.rotation.x = THREE.MathUtils.lerp(world.current.rotation.x, target.current.y, .025)
       world.current.position.y = Math.sin(clock.getElapsedTime() * .7) * .055
     }
+
     // subtle vertex wobble on core
     if (coreRef.current) {
       const geom = coreRef.current.geometry as THREE.BufferGeometry
@@ -540,6 +631,7 @@ function World({ selected, onSelect, repos }: { selected: string | null, onSelec
         </Html>
       </group>
     ))}
+    <Spaceship radius={1.9} speed={0.35} phase={0.5} />
   </group>
 }
 
