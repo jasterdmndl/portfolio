@@ -93,7 +93,7 @@ I'm passionate about transforming ideas into software that solves real-world pro
 
 - GitHub: https://github.com/jasterdmndl
 - Facebook: https://www.facebook.com/lemuel.dimaandal/
-- Email: jhesterdimaandal@gmail.com
+- Email: jhesterdimaandal123@gmail.com
 
 ---
 
